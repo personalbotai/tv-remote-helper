@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Remote Helper</string>
+    <string name="accessibility_desc">Remote Hotkey Helper for 4065, 4077, and 4020</string>
+</resources>
