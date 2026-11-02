@@ -34,26 +34,46 @@ class RemoteAccessibilityService : AccessibilityService() {
             when (event.keyCode) {
                 4065 -> {
                     Log.d("RemoteHelper", "Key 4065 detected -> Opening SmartTube")
-                    packageManager.getLaunchIntentForPackage("org.smarttube.stable")?.let {
-                        it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        startActivity(it)
+                    try {
+                        val intent = packageManager.getLaunchIntentForPackage("org.smarttube.stable")
+                        if (intent != null) {
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                        } else {
+                            val fallback = Intent(Intent.ACTION_MAIN).apply {
+                                setClassName("org.smarttube.stable", "com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity")
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            startActivity(fallback)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("RemoteHelper", "Failed to launch SmartTube", e)
                     }
                     return true
                 }
                 4077 -> {
                     Log.d("RemoteHelper", "Key 4077 detected -> Opening Control Center")
-                    val intent = Intent("app.orchard.tv.CONTROL_CENTER").apply {
-                        setPackage("app.orchard.tv")
+                    try {
+                        val intent = Intent("app.orchard.tv.CONTROL_CENTER").apply {
+                            setPackage("app.orchard.tv")
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        sendBroadcast(intent)
+                    } catch (e: Exception) {
+                        Log.e("RemoteHelper", "Failed to open Control Center", e)
                     }
-                    sendBroadcast(intent)
                     return true
                 }
                 4020 -> {
                     Log.d("RemoteHelper", "Key 4020 detected -> Triggering Blackout")
-                    val intent = Intent(this, BlackoutActivity::class.java).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    try {
+                        val intent = Intent(this, BlackoutActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        }
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        Log.e("RemoteHelper", "Failed to start BlackoutActivity", e)
                     }
-                    startActivity(intent)
                     return true
                 }
             }
