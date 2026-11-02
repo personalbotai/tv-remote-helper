@@ -62,6 +62,19 @@ class RemoteAccessibilityService : AccessibilityService() {
                     }
                     return true
                 }
+                4077 -> {
+                    // Tombol 4077 langsung membuka pengaturan gambar TCL
+                    Log.d("RemoteHelper", "Key 4077 detected -> Opening Picture Settings")
+                    try {
+                        val intent = Intent("android.settings.DISPLAY_SETTINGS").apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        Log.e("RemoteHelper", "Failed to launch DISPLAY_SETTINGS", e)
+                    }
+                    return true
+                }
             }
         }
         return super.onKeyEvent(event)
