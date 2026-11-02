@@ -29,54 +29,65 @@ class RemoteAccessibilityService : AccessibilityService() {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
+        Log.d("RemoteHelper", "Key received: keyCode=${event.keyCode}")
         if (event.action == KeyEvent.ACTION_DOWN) {
             when (event.keyCode) {
-                4065 -> {
-                    Log.d("RemoteHelper", "Key 4065 detected -> Opening SmartTube")
-                    try {
-                        val intent = packageManager.getLaunchIntentForPackage("org.smarttube.stable")
-                        if (intent != null) {
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            startActivity(intent)
-                        } else {
-                            val fallback = Intent(Intent.ACTION_MAIN).apply {
-                                setClassName("org.smarttube.stable", "com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity")
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            }
-                            startActivity(fallback)
-                        }
-                    } catch (e: Exception) {
-                        Log.e("RemoteHelper", "Failed to launch SmartTube", e)
-                    }
+                // 1. YouTube -> SmartTube (4065 / standard KEYCODE_MEDIA_TOP_MENU / KEYCODE_TV)
+                4065, KeyEvent.KEYCODE_TV -> {
+                    launchPkg("org.smarttube.stable", "com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity")
                     return true
                 }
-                4020 -> {
-                    Log.d("RemoteHelper", "Key 4020 detected -> Triggering Blackout")
-                    try {
-                        val intent = Intent(this, BlackoutActivity::class.java).apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                        }
-                        startActivity(intent)
-                    } catch (e: Exception) {
-                        Log.e("RemoteHelper", "Failed to start BlackoutActivity", e)
-                    }
+                // 2. Netflix -> IDLIX
+                190, 192, 288, KeyEvent.KEYCODE_STB_INPUT -> {
+                    launchPkg("com.personalbotai.idlix", null)
                     return true
                 }
-                4077 -> {
-                    // Tombol 4077 langsung membuka pengaturan gambar TCL
-                    Log.d("RemoteHelper", "Key 4077 detected -> Opening Picture Settings")
-                    try {
-                        val intent = Intent("android.settings.DISPLAY_SETTINGS").apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                        startActivity(intent)
-                    } catch (e: Exception) {
-                        Log.e("RemoteHelper", "Failed to launch DISPLAY_SETTINGS", e)
+                // 3. Vidio -> MovieBox / MBox
+                188, 189, KeyEvent.KEYCODE_VIDEO_APP_1 -> {
+                    launchPkg("com.community.mbox.tv", null)
+                    return true
+                }
+                // 4. TCL Channel / Prime -> Blackout mode (4020)
+                4020, 290, KeyEvent.KEYCODE_POWER -> {
+                    val intent = Intent(this, BlackoutActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                     }
+                    startActivity(intent)
+                    return true
+                }
+                // 5. WeTV -> TV Bro Browser
+                291, KeyEvent.KEYCODE_CALCULATOR -> {
+                    launchPkg("com.phlox.tvwebbrowser", null)
+                    return true
+                }
+                // 6. Settings / 4077 -> TCL Picture Settings
+                4077, KeyEvent.KEYCODE_SETTINGS -> {
+                    val intent = Intent("android.settings.DISPLAY_SETTINGS").apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    startActivity(intent)
                     return true
                 }
             }
         }
         return super.onKeyEvent(event)
+    }
+
+    private fun launchPkg(pkg: String, cls: String?) {
+        try {
+            val intent = packageManager.getLaunchIntentForPackage(pkg)
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            } else if (cls != null) {
+                val fallback = Intent(Intent.ACTION_MAIN).apply {
+                    setClassName(pkg, cls)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                startActivity(fallback)
+            }
+        } catch (e: Exception) {
+            Log.e("RemoteHelper", "Failed to launch $pkg", e)
+        }
     }
 }
