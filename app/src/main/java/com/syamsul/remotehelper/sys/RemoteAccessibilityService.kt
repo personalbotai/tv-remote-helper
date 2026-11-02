@@ -29,7 +29,6 @@ class RemoteAccessibilityService : AccessibilityService() {
     }
 
     override fun onKeyEvent(event: KeyEvent): Boolean {
-        Log.d("RemoteHelper", "onKeyEvent received: keyCode=${event.keyCode}, action=${event.action}")
         if (event.action == KeyEvent.ACTION_DOWN) {
             when (event.keyCode) {
                 4065 -> {
@@ -48,19 +47,6 @@ class RemoteAccessibilityService : AccessibilityService() {
                         }
                     } catch (e: Exception) {
                         Log.e("RemoteHelper", "Failed to launch SmartTube", e)
-                    }
-                    return true
-                }
-                4077 -> {
-                    Log.d("RemoteHelper", "Key 4077 detected -> Opening Control Center")
-                    try {
-                        val intent = Intent("app.orchard.tv.CONTROL_CENTER").apply {
-                            setPackage("app.orchard.tv")
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                        sendBroadcast(intent)
-                    } catch (e: Exception) {
-                        Log.e("RemoteHelper", "Failed to open Control Center", e)
                     }
                     return true
                 }
