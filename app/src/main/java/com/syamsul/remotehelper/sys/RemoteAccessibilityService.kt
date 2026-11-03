@@ -60,17 +60,15 @@ class RemoteAccessibilityService : AccessibilityService() {
                     launchPkg("com.phlox.tvwebbrowser", null)
                     return true
                 }
-                // 6. Settings / 4077 -> Direct TCL PictureSettings Activity
+                // 6. Settings / 4077 -> Direct TCL Display Settings Intent
                 4077, KeyEvent.KEYCODE_SETTINGS -> {
                     try {
-                        val intent = Intent().setComponent(android.content.ComponentName("com.tcl.settings", "com.tcl.settings.PictureActivity"))
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        val intent = Intent("android.settings.DISPLAY_SETTINGS").apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                        }
                         startActivity(intent)
                     } catch (e: Exception) {
-                        val fallback = Intent("android.settings.DISPLAY_SETTINGS").apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                        startActivity(fallback)
+                        Log.e("RemoteHelper", "Failed to open DISPLAY_SETTINGS", e)
                     }
                     return true
                 }
