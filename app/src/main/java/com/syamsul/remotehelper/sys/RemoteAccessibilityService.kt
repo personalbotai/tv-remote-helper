@@ -32,7 +32,7 @@ class RemoteAccessibilityService : AccessibilityService() {
         Log.d("RemoteHelper", "Key received: keyCode=${event.keyCode}")
         if (event.action == KeyEvent.ACTION_DOWN) {
             when (event.keyCode) {
-                // 1. YouTube -> SmartTube (4065 / standard KEYCODE_MEDIA_TOP_MENU / KEYCODE_TV)
+                // 1. YouTube -> SmartTube
                 4065, KeyEvent.KEYCODE_TV -> {
                     launchPkg("org.smarttube.stable", "com.liskovsoft.smartyoutubetv2.tv.ui.main.SplashActivity")
                     return true
@@ -58,6 +58,20 @@ class RemoteAccessibilityService : AccessibilityService() {
                 // 5. WeTV -> TV Bro Browser
                 291, KeyEvent.KEYCODE_CALCULATOR -> {
                     launchPkg("com.phlox.tvwebbrowser", null)
+                    return true
+                }
+                // 6. Settings / 4077 -> Direct TCL PictureSettings Activity
+                4077, KeyEvent.KEYCODE_SETTINGS -> {
+                    try {
+                        val intent = Intent().setComponent(android.content.ComponentName("com.tcl.settings", "com.tcl.settings.PictureActivity"))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        val fallback = Intent("android.settings.DISPLAY_SETTINGS").apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        startActivity(fallback)
+                    }
                     return true
                 }
             }
