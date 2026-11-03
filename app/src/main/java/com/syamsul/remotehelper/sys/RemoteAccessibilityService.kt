@@ -60,14 +60,6 @@ class RemoteAccessibilityService : AccessibilityService() {
                     launchPkg("com.phlox.tvwebbrowser", null)
                     return true
                 }
-                // 6. Settings / 4077 -> TCL Picture Settings
-                4077, KeyEvent.KEYCODE_SETTINGS -> {
-                    val intent = Intent("android.settings.DISPLAY_SETTINGS").apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    startActivity(intent)
-                    return true
-                }
             }
         }
         return super.onKeyEvent(event)
