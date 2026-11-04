@@ -60,15 +60,31 @@ class RemoteAccessibilityService : AccessibilityService() {
                     launchPkg("com.phlox.tvwebbrowser", null)
                     return true
                 }
-                // 6. Settings / 4077 -> Direct TCL Display Settings Intent
+                // 6. Settings / 4077 -> Toggle Aerial Control Center (Simulate MENU / Up to Control Center)
                 4077, KeyEvent.KEYCODE_SETTINGS -> {
                     try {
-                        val intent = Intent("android.settings.DISPLAY_SETTINGS").apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                        val inputManager = getSystemService(INPUT_SERVICE) as? android.hardware.input.InputManager
+                        val now = android.os.SystemClock.uptimeMillis()
+                        val down = KeyEvent(now, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MENU, 0)
+                        val up = KeyEvent(now, now, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MENU, 0)
+                        val injectMethod = inputManager?.javaClass?.getMethod(
+                            "injectInputEvent",
+                            android.view.InputEvent::class.java,
+                            Int::class.javaPrimitiveType
+                        )
+                        val injected = injectMethod?.invoke(inputManager, down, 0) as? Boolean ?: false
+                        injectMethod?.invoke(inputManager, up, 0)
+
+                        if (!injected) {
+                            // Fallback via Accessibility Global Action or direct broadcast
+                            val intent = Intent("app.orchard.tv.CONFIG").apply {
+                                setPackage("app.orchard.tv")
+                                putExtra("toggle_control_center", true)
+                            }
+                            sendBroadcast(intent)
                         }
-                        startActivity(intent)
                     } catch (e: Exception) {
-                        Log.e("RemoteHelper", "Failed to open DISPLAY_SETTINGS", e)
+                        Log.e("RemoteHelper", "Failed to inject KEYCODE_MENU", e)
                     }
                     return true
                 }
