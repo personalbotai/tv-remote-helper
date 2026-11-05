@@ -64,13 +64,13 @@ class RemoteAccessibilityService : AccessibilityService() {
                 // 6. Settings / 4077 -> Open Aerial Control Center
                 4077, KeyEvent.KEYCODE_SETTINGS -> {
                     try {
-                        // 1. Bring Aerial home to front
                         val intent = packageManager.getLaunchIntentForPackage("app.orchard.tv")
                         if (intent != null) {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
                             startActivity(intent)
                         }
-                        // 2. Simulate DPAD_UP then DPAD_CENTER to open Control Center in Aerial
+                        SystemClock.sleep(350)
+
                         val inputManager = getSystemService(INPUT_SERVICE) as? android.hardware.input.InputManager
                         val injectMethod = inputManager?.javaClass?.getMethod(
                             "injectInputEvent",
@@ -84,7 +84,7 @@ class RemoteAccessibilityService : AccessibilityService() {
                             injectMethod.invoke(inputManager, upDown, 0)
                             injectMethod.invoke(inputManager, upUp, 0)
 
-                            SystemClock.sleep(200)
+                            SystemClock.sleep(150)
 
                             val centerDown = KeyEvent(now, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER, 0)
                             val centerUp = KeyEvent(now, now, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER, 0)
