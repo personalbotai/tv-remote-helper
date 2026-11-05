@@ -3,7 +3,7 @@ package com.syamsul.remotehelper.sys
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Intent
-import android.os.SystemClock
+import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
@@ -61,38 +61,15 @@ class RemoteAccessibilityService : AccessibilityService() {
                     launchPkg("com.phlox.tvwebbrowser", null)
                     return true
                 }
-                // 6. Settings / 4077 -> Open Aerial Control Center
-                4077, KeyEvent.KEYCODE_SETTINGS -> {
+                // 6. Settings / 4077 / 4078 -> Direct Android TV Main Settings
+                4077, 4078, KeyEvent.KEYCODE_SETTINGS -> {
                     try {
-                        val intent = packageManager.getLaunchIntentForPackage("app.orchard.tv")
-                        if (intent != null) {
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
-                            startActivity(intent)
+                        val intent = Intent(Settings.ACTION_SETTINGS).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
                         }
-                        SystemClock.sleep(350)
-
-                        val inputManager = getSystemService(INPUT_SERVICE) as? android.hardware.input.InputManager
-                        val injectMethod = inputManager?.javaClass?.getMethod(
-                            "injectInputEvent",
-                            android.view.InputEvent::class.java,
-                            Int::class.javaPrimitiveType
-                        )
-                        if (injectMethod != null) {
-                            val now = SystemClock.uptimeMillis()
-                            val upDown = KeyEvent(now, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP, 0)
-                            val upUp = KeyEvent(now, now, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_UP, 0)
-                            injectMethod.invoke(inputManager, upDown, 0)
-                            injectMethod.invoke(inputManager, upUp, 0)
-
-                            SystemClock.sleep(150)
-
-                            val centerDown = KeyEvent(now, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER, 0)
-                            val centerUp = KeyEvent(now, now, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER, 0)
-                            injectMethod.invoke(inputManager, centerDown, 0)
-                            injectMethod.invoke(inputManager, centerUp, 0)
-                        }
+                        startActivity(intent)
                     } catch (e: Exception) {
-                        Log.e("RemoteHelper", "Failed to open Control Center", e)
+                        Log.e("RemoteHelper", "Failed to open system settings", e)
                     }
                     return true
                 }
