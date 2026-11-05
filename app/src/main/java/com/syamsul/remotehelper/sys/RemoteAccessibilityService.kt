@@ -60,22 +60,15 @@ class RemoteAccessibilityService : AccessibilityService() {
                     launchPkg("com.phlox.tvwebbrowser", null)
                     return true
                 }
-                // 6. Settings / 4077 -> Trigger Aerial's native KEYCODE_SETTINGS handler (opens TV settings)
+                // 6. Settings / 4077 -> Directly launch system Settings or Settings app to ensure reliability
                 4077, KeyEvent.KEYCODE_SETTINGS -> {
                     try {
-                        val inputManager = getSystemService(INPUT_SERVICE) as? android.hardware.input.InputManager
-                        val now = android.os.SystemClock.uptimeMillis()
-                        val down = KeyEvent(now, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SETTINGS, 0)
-                        val up = KeyEvent(now, now, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_SETTINGS, 0)
-                        val injectMethod = inputManager?.javaClass?.getMethod(
-                            "injectInputEvent",
-                            android.view.InputEvent::class.java,
-                            Int::class.javaPrimitiveType
-                        )
-                        injectMethod?.invoke(inputManager, down, 0)
-                        injectMethod?.invoke(inputManager, up, 0)
+                        val intent = packageManager.getLaunchIntentForPackage("com.android.tv.settings")
+                            ?: Intent(android.provider.Settings.ACTION_SETTINGS)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
                     } catch (e: Exception) {
-                        Log.e("RemoteHelper", "Failed to inject KEYCODE_SETTINGS", e)
+                        Log.e("RemoteHelper", "Failed to open settings", e)
                     }
                     return true
                 }
