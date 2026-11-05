@@ -61,8 +61,8 @@ class RemoteAccessibilityService : AccessibilityService() {
                     launchPkg("com.phlox.tvwebbrowser", null)
                     return true
                 }
-                // 6. Settings / 4077 / 4078 -> Direct Android TV Main Settings
-                4077, 4078, KeyEvent.KEYCODE_SETTINGS -> {
+                // 6. Settings / 4077 -> Direct Android TV Main Settings
+                4077, KeyEvent.KEYCODE_SETTINGS -> {
                     try {
                         val intent = Intent(Settings.ACTION_SETTINGS).apply {
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
